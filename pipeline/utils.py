@@ -39,7 +39,6 @@ def load_one_CV_PIL(path, dim):
             ret,frame = vidcap.read()
             if ret:
                 img = mold_image(frame, dim)
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                 im_pil = Image.fromarray(img)
                 yield im_pil
             else:
@@ -47,12 +46,12 @@ def load_one_CV_PIL(path, dim):
 
 def load_one_SK_PIL(path, dim):
         vidcap = cv2.VideoCapture(path)
-        n_frames   = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) # number of frames
-        video = loadVideoSK(path, n_frames)
-        videodata = videodata[::1,...]
+        n_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) # number of frames
+        video = loadVideoSK(path, n_frames, grey_scale=False)
+        video = video[::1,...]
         for frame in video:
-                img = mold_image(frame, dim)
-                im_pil = Image.fromarray(img)
-                yield im_pil
+            img = mold_image(frame[:,:,:], dim)
+            im_pil = Image.fromarray(img)
+            yield im_pil
 
 
