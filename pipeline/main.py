@@ -2,8 +2,8 @@ from utils import load_one_CV_PIL
 
 from utils_yolo import *
 
-MODEL_NAME = 'model/1964_3.tflite'
-MODEL_YAML = 'model/1964_3.yaml'
+MODEL_NAME = 'models/1964_3.tflite'
+MODEL_YAML = 'models/1964_3.yaml'
 
 alg_info = {
     "classes": ['other_animal', 'pig', 'blackbear', 'bobcat', 'rabbit', 'cougar', 'skunk', 'otter', 'rat']
