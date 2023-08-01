@@ -15,9 +15,10 @@ input_size = edgetpu.get_image_size()
 def tracking(vid_path, dimension, input_size):
     for img in load_one_SK_PIL(vid_path, dimension):
         _, net_image, _ = get_image_tensor(img, input_size[0])
-        det = edgetpu.predict(net_image)
-        bbox, bbox_id, bbox_score = det.bbox, det.id, det.score
-        print(bbox)
+        dets = edgetpu.predict(net_image) #list of obj detections
+        for det in dets:
+            bbox, bbox_id, bbox_score = det.bbox, det.id, det.score
+            print(bbox, bbox_id, bbox_score)
 
 vid_path = "kittens.AVI"
 dim = 224
