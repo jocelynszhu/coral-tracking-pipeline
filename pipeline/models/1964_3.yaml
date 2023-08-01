@@ -1,0 +1,14 @@
+path: ../datasets/1964
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: other_animal
+  1: pig
+  2: blackbear
+  3: bobcat
+  4: rabbit
+  5: cougar
+  6: skunk
+  7: otter
+  8: rat

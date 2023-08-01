@@ -5,7 +5,10 @@ from utils_yolo import *
 MODEL_NAME = 'model/1964_3.tflite'
 MODEL_YAML = 'model/1964_3.yaml'
 
-edgetpu = EdgeTPUModel(MODEL_NAME)
+alg_info = {
+    "classes": ['other_animal', 'pig', 'blackbear', 'bobcat', 'rabbit', 'cougar', 'skunk', 'otter', 'rat']
+}
+edgetpu = EdgeTPUModel(MODEL_NAME, alg_info)
 input_size = edgetpu.get_image_size()
 
 
