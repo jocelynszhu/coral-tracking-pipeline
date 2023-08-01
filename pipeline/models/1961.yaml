@@ -1,0 +1,8 @@
+path: ../datasets/1961
+train: images/train
+val: images/val
+test: images/test
+names:
+  0: other_animal
+  1: rat
+  2: cat
