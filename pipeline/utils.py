@@ -45,5 +45,14 @@ def load_one_CV_PIL(path, dim):
             else:
                 break
 
+def load_one_SK_PIL(path, dim):
+        vidcap = cv2.VideoCapture(path)
+        n_frames   = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) # number of frames
+        video = loadVideoSK(path, n_frames)
+        videodata = videodata[::1,...]
+        for frame in video:
+                img = mold_image(frame, dim)
+                im_pil = Image.fromarray(img)
+                yield im_pil
 
 
