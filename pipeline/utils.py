@@ -67,7 +67,8 @@ def input_image_size(interpreter):
 def callback(image, objs, mot_tracker, writer):
     detections = []
     for obj in objs:
-        element = obj.bbox 
+        x, y, w, h = obj.bbox
+        element = yolobbox2bbox(x, y, w, h)
         element.append(obj.score)  # print('element= ',element)
         detections.append(element)  # print('dets: ',dets)
     detections = np.array(detections)
@@ -86,7 +87,10 @@ def callback(image, objs, mot_tracker, writer):
         cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
         writer.write(image)
 
-
+def yolobbox2bbox(x,y,w,h):
+    x1, y1 = x-w/2, y-h/2
+    x2, y2 = x+w/2, y+h/2
+    return x1, y1, x2, y2
 
      
 def create_unique_color_float(tag, hue_step=0.41):
