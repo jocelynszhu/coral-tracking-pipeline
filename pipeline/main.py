@@ -20,9 +20,11 @@ mot_tracker = Sort(max_age=1,
 
 def tracking(vid_path, dimension, input_size):
     for img in load_one_SK_PIL(vid_path, dimension):
+        print("loaded image")
         _, net_image, _ = get_image_tensor(img, input_size[0])
         dets = yolo.predict(net_image) #list of obj detections
         callback(net_image, dets, mot_tracker, writer)
+        print("tracked image")
     writer.release()
 
 
