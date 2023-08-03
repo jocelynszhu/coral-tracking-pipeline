@@ -27,7 +27,7 @@ def tracking(vid_path, dimension, input_size):
         try:
             _, net_image, _ = get_image_tensor(img_pil, input_size[0])
             dets = yolo.predict(net_image) #list of obj detections
-            callback(img, dets, mot_tracker, writer)
+            callback(img, dimension, dets, mot_tracker, writer)
             print("tracked image")
         except:
             pass
