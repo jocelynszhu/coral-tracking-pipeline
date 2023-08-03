@@ -77,8 +77,8 @@ def callback(image, objs, mot_tracker, writer):
     for i in range(len(trdata.tolist())):
         coords = trdata.tolist()[i]
         x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
-        name = "ID: {}".format(str(name_idx))
         name_idx = int(coords[4])
+        name = "ID: {}".format(str(name_idx))
         color = create_unique_color_float(name_idx)
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
         cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)

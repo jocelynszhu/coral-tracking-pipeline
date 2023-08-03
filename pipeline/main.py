@@ -1,7 +1,7 @@
 from utils import *
 
 from utils_yolo import *
-from tracker.sort import Sort
+from sort import Sort
 
 import cv2
 
@@ -17,8 +17,6 @@ mot_tracker = Sort(max_age=1,
                        min_hits=3,
                        iou_threshold=0.3)
 
-w, h, _ = yolo.input_details
-inference_size = (w, h)
 
 def tracking(vid_path, dimension, input_size):
     for img in load_one_SK_PIL(vid_path, dimension):
@@ -37,4 +35,5 @@ fps  = int(vidcap.get(cv2.CAP_PROP_FPS))
 
 writer = cv2.VideoWriter(out_path, 
         cv2.VideoWriter_fourcc(*'mp4v'), fps, (dim, dim))
+
 tracking(vid_path, dim, input_size)
