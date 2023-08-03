@@ -4,6 +4,9 @@ import numpy as np
 
 import skvideo
 import skvideo.io
+import svgwrite
+
+import colorsys
 
 from PIL import Image
 
@@ -55,4 +58,39 @@ def load_one_SK_PIL(path, dim):
             im_pil = Image.fromarray(img)
             yield im_pil
 
+def input_image_size(interpreter):
+    """Returns input size as (width, height, channels) tuple."""
+    _, height, width, channels = interpreter.get_input_details()[0]['shape']
+    return width, height, channels
 
+
+def callback(image, objs, mot_tracker, writer):
+    detections = []
+    for obj in objs:
+        element = obj.bbox 
+        element.append(obj.score)  # print('element= ',element)
+        detections.append(element)  # print('dets: ',dets)
+    detections = np.array(detections)
+    trdata = []
+    trdata = mot_tracker.update(detections)
+
+    for i in range(len(trdata.tolist())):
+        coords = trdata.tolist()[i]
+        x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
+        name = "ID: {}".format(str(name_idx))
+        name_idx = int(coords[4])
+        color = create_unique_color_float(name_idx)
+        cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
+        cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
+        writer.write(image)
+
+
+
+     
+def create_unique_color_float(tag, hue_step=0.41):
+    """Create a unique RGB color code for a given track id (tag).
+
+    """
+    h, v = (tag * hue_step) % 1, 1. - (int(tag * hue_step) % 4) / 5.
+    r, g, b = colorsys.hsv_to_rgb(h, 1., v)
+    return r, g, b

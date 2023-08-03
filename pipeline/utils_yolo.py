@@ -7,6 +7,8 @@ import pycoral.utils.edgetpu as etpu
 from pycoral.adapters import common
 import cv2
 
+import collections
+
 #logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("YOLO ")
 
@@ -86,7 +88,6 @@ def get_image_tensor(img, max_size, debug=False):
     return img, resized, pad
 
 
-    
 class coral_det(object): 
     def __init__(self, id, score,bbox): 
         self.id = id 

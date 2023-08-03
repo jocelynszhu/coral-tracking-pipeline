@@ -1,6 +1,9 @@
-from utils import load_one_CV_PIL, load_one_SK_PIL
+from utils import *
 
 from utils_yolo import *
+from tracker.sort import Sort
+
+import cv2
 
 MODEL_NAME = 'models/1964_3.tflite'
 MODEL_YAML = 'models/1964_3.yaml'
@@ -8,19 +11,30 @@ MODEL_YAML = 'models/1964_3.yaml'
 alg_info = {
     "classes": ['other_animal', 'pig', 'blackbear', 'bobcat', 'rabbit', 'cougar', 'skunk', 'otter', 'rat']
 }
-edgetpu = EdgeTPUModel(MODEL_NAME, alg_info)
-input_size = edgetpu.get_image_size()
+yolo = EdgeTPUModel(MODEL_NAME, alg_info)
+input_size = yolo.get_image_size()
+mot_tracker = Sort(max_age=1, 
+                       min_hits=3,
+                       iou_threshold=0.3)
 
+w, h, _ = yolo.input_details
+inference_size = (w, h)
 
 def tracking(vid_path, dimension, input_size):
     for img in load_one_SK_PIL(vid_path, dimension):
         _, net_image, _ = get_image_tensor(img, input_size[0])
-        dets = edgetpu.predict(net_image) #list of obj detections
-        for det in dets:
-            bbox, bbox_id, bbox_score = det.bbox, det.id, det.score
-            print(bbox, bbox_id, bbox_score)
+        dets = yolo.predict(net_image) #list of obj detections
+        callback(net_image, dets, mot_tracker, writer)
+    writer.release()
+
 
 vid_path = "kittens.AVI"
+out_path = "kittens_sort.mp4"
 dim = 224
 
+vidcap     = cv2.VideoCapture(vid_path)
+fps  = int(vidcap.get(cv2.CAP_PROP_FPS))
+
+writer = cv2.VideoWriter(out_path, 
+        cv2.VideoWriter_fourcc(*'mp4v'), fps, (dim, dim))
 tracking(vid_path, dim, input_size)
