@@ -13,18 +13,24 @@ alg_info = {
 }
 yolo = EdgeTPUModel(MODEL_NAME, alg_info)
 input_size = yolo.get_image_size()
-mot_tracker = Sort(max_age=1, 
-                       min_hits=3,
-                       iou_threshold=0.3)
+
 
 
 def tracking(vid_path, dimension, input_size):
+    mot_tracker = Sort(max_age=1, 
+                       min_hits=3,
+                       iou_threshold=0.3)
+    i = 0
     for img, img_pil in load_one_SK_PIL(vid_path, dimension):
-        print("loaded image")
-        _, net_image, _ = get_image_tensor(img_pil, input_size[0])
-        dets = yolo.predict(net_image) #list of obj detections
-        callback(img, dets, mot_tracker, writer)
-        print("tracked image")
+        i += 1
+        print("loaded image ", i)
+        try:
+            _, net_image, _ = get_image_tensor(img_pil, input_size[0])
+            dets = yolo.predict(net_image) #list of obj detections
+            callback(img, dets, mot_tracker, writer)
+            print("tracked image")
+        except:
+            pass
     writer.release()
 
 
