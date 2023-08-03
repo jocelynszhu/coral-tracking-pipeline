@@ -82,6 +82,7 @@ def callback(image, objs, mot_tracker, writer):
         color = create_unique_color_float(name_idx)
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
+        print("track ", name, "(", x1, y1,")")
         cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
         writer.write(image)
 
@@ -94,4 +95,4 @@ def create_unique_color_float(tag, hue_step=0.41):
     """
     h, v = (tag * hue_step) % 1, 1. - (int(tag * hue_step) % 4) / 5.
     r, g, b = colorsys.hsv_to_rgb(h, 1., v)
-    return r, g, b
+    return int(255*r), int(255*g), int(255*b)
