@@ -56,7 +56,7 @@ def load_one_SK_PIL(path, dim):
         for frame in video:
             img = mold_image(frame[:,:,:], dim)
             im_pil = Image.fromarray(img)
-            yield im_pil
+            yield img, im_pil
 
 def input_image_size(interpreter):
     """Returns input size as (width, height, channels) tuple."""
