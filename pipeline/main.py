@@ -4,8 +4,7 @@ from utils_yolo import *
 from sort import Sort
 
 import cv2
-
-import tensorflow as tf
+import pycoral.utils.edgetpu as etpu
 
 MODEL_NAME = 'models/1964_3.tflite'
 MODEL_YAML = 'models/1964_3.yaml'
@@ -22,7 +21,7 @@ def tracking(vid_path, dimension, input_size):
     mot_tracker = Sort(max_age=1, 
                        min_hits=3,
                        iou_threshold=0.3)
-    behav_interpreter = tf.lite.Interpreter('behavioral_model.tflite')
+    behav_interpreter = etpu.make_interpreter('behavioral_model.tflite')
     behav_interpreter.allocate_tensors()
     i = 0
     for img, img_pil in load_one_SK_PIL(vid_path, dimension):
