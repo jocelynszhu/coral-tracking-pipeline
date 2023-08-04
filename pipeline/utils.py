@@ -64,10 +64,11 @@ def input_image_size(interpreter):
     return width, height, channels
 
 
-def callback(image, dim, objs, mot_tracker, writer):
+def callback(img, dim, objs, mot_tracker, behav_interpreter, writer):
     detections = []
-    print([obj.id for obj in objs])
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    image = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    
+    #format yolo detects for tracking
     for obj in objs:
         x0, y0, x1, y1 = obj.bbox
         element = convert2bbox(x0, y0, x1, y1, dim)
@@ -76,17 +77,25 @@ def callback(image, dim, objs, mot_tracker, writer):
     detections = np.array(detections)
     trdata = []
     trdata = mot_tracker.update(detections)
-
+    
+    #generate tracklets 
+    tracklets = {}
     for i in range(len(trdata.tolist())):
         coords = trdata.tolist()[i]
         x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
         name_idx = int(coords[4])
-        name = "ID: {}".format(str(name_idx))
+        try:
+            tracklets[name_idx].append(img)
+        except:
+            tracklets[name_idx] = [img]
+        #name = "ID: {}".format(str(name_idx))
         color = create_unique_color_float(name_idx)
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
-        print("track ", name, "(", x1, y1,"), ", "(", x2, y2,")")
-        cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
+        
+        #cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
+    print(tracklets)
     writer.write(image)
+
 
 def convert2bbox(x0, y0, x1, y1, dim):
     x = x0 + (x1 - x0) / 2
@@ -97,11 +106,12 @@ def convert2bbox(x0, y0, x1, y1, dim):
     x2, y2 = x+w/2, y+h/2
     return [x1*dim, y1*dim, x2*dim, y2*dim]
 
-# def yolobbox2bbox(x,y,w,h, dim):
-#     x1, y1 = x-w/2, y-h/2
-#     x2, y2 = x+w/2, y+h/2
-#     return [x1, y1, x2, y2]
-
+def gen_tracklet(img, mask):
+    """ img: np array
+        mask: bbox given in format [x1, y1, x2, y2]
+    """
+    x1, y1, x2, y2 = mask
+    return img[y1:y2, x1:x2]
      
 def create_unique_color_float(tag, hue_step=0.41):
     """Create a unique RGB color code for a given track id (tag).

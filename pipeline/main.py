@@ -5,13 +5,15 @@ from sort import Sort
 
 import cv2
 
+import tensorflow as tf
+
 MODEL_NAME = 'models/1964_3.tflite'
 MODEL_YAML = 'models/1964_3.yaml'
 
 alg_info = {
     "classes": ['other_animal', 'pig', 'blackbear', 'bobcat', 'rabbit', 'cougar', 'skunk', 'otter', 'rat']
 }
-yolo = EdgeTPUModel(MODEL_NAME, alg_info)
+yolo = EdgeTPUModel(MODEL_NAME, alg_info, conf_thresh=0.4, iou_thresh=0.3)
 input_size = yolo.get_image_size()
 
 
@@ -20,6 +22,8 @@ def tracking(vid_path, dimension, input_size):
     mot_tracker = Sort(max_age=1, 
                        min_hits=3,
                        iou_threshold=0.3)
+    behav_interpreter = tf.lite.Interpreter('behavioral_model.tflite')
+    behav_interpreter.allocate_tensors()
     i = 0
     for img, img_pil in load_one_SK_PIL(vid_path, dimension):
         i += 1
@@ -27,7 +31,7 @@ def tracking(vid_path, dimension, input_size):
         try:
             _, net_image, _ = get_image_tensor(img_pil, input_size[0])
             dets = yolo.predict(net_image) #list of obj detections
-            callback(img, dimension, dets, mot_tracker, writer)
+            callback(img, dimension, dets, mot_tracker, behav_interpreter, writer)
             print("tracked image")
         except:
             pass
