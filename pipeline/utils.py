@@ -66,9 +66,10 @@ def input_image_size(interpreter):
 
 def callback(image, dim, objs, mot_tracker, writer):
     detections = []
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     for obj in objs:
         x, y, w, h = obj.bbox
-        element = yolobbox2bbox(x, y, w, h)
+        element = yolobbox2bbox(x, y, w, h, dim)
         element.append(obj.score)  # print('element= ',element)
         detections.append(element)  # print('dets: ',dets)
     detections = np.array(detections)
@@ -77,20 +78,24 @@ def callback(image, dim, objs, mot_tracker, writer):
 
     for i in range(len(trdata.tolist())):
         coords = trdata.tolist()[i]
-        x1, y1, x2, y2 = int(coords[0]*dim), int(coords[1]*dim), int(coords[2]*dim), int(coords[3]*dim)
+        x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
         name_idx = int(coords[4])
         name = "ID: {}".format(str(name_idx))
         color = create_unique_color_float(name_idx)
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
         print("track ", name, "(", x1, y1,")")
         cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
-        writer.write(image)
+    writer.write(image)
 
 def yolobbox2bbox(x,y,w,h, dim):
-    x1, y1 = x-w/2, y-h/2
-    x2, y2 = x+w/2, y+h/2
+    x1, y1 = (x-1/2)*w*dim, (y-1/2)*w*dim
+    x2, y2 = (x+1/2)*w*dim, (y+1/2)*w*dim
     return [x1, y1, x2, y2]
+
+# def yolobbox2bbox(x,y,w,h, dim):
+#     x1, y1 = x-w/2, y-h/2
+#     x2, y2 = x+w/2, y+h/2
+#     return [x1, y1, x2, y2]
 
      
 def create_unique_color_float(tag, hue_step=0.41):
