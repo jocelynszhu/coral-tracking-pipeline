@@ -67,9 +67,10 @@ def input_image_size(interpreter):
 def callback(image, dim, objs, mot_tracker, writer):
     detections = []
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    print(objs)
     for obj in objs:
-        x, y, w, h = obj.bbox
-        element = yolobbox2bbox(x, y, w, h, dim)
+        x0, y0, x1, y1 = obj.bbox
+        element = convert2bbox(x0, y0, x1, y1, dim)
         element.append(obj.score)  # print('element= ',element)
         detections.append(element)  # print('dets: ',dets)
     detections = np.array(detections)
@@ -83,14 +84,18 @@ def callback(image, dim, objs, mot_tracker, writer):
         name = "ID: {}".format(str(name_idx))
         color = create_unique_color_float(name_idx)
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
-        print("track ", name, "(", x1, y1,")")
+        print("track ", name, "(", x1, y1,"), ", "(", x2, y2,")")
         cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
     writer.write(image)
 
-def yolobbox2bbox(x,y,w,h, dim):
-    x1, y1 = (x+1/2-w/2)*dim, (y+1/2-h/2)*dim
-    x2, y2 = (x+1/2+w/2)*dim, (y+1/2+h/2)*dim
-    return [x1, y1, x2, y2]
+def convert2bbox(x0, y0, x1, y1, dim):
+    x = x0 + (x1 - x0) / 2
+    y = y0 + (y1 - y0) / 2
+    w = x1 - x0
+    h = y1 - y0
+    x1, y1 = x-w/2, y-h/2
+    x2, y2 = x+w/2, y+h/2
+    return [x1*dim, y1*dim, x2*dim, y2*dim]
 
 # def yolobbox2bbox(x,y,w,h, dim):
 #     x1, y1 = x-w/2, y-h/2
