@@ -66,8 +66,8 @@ def input_image_size(interpreter):
 
 def callback(image, dim, objs, mot_tracker, writer):
     detections = []
+    print([obj.id for obj in objs])
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    print(objs)
     for obj in objs:
         x0, y0, x1, y1 = obj.bbox
         element = convert2bbox(x0, y0, x1, y1, dim)
