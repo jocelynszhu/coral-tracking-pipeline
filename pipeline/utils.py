@@ -64,7 +64,7 @@ def input_image_size(interpreter):
     return width, height, channels
 
 
-def callback(img, dim, objs, mot_tracker, behav_interpreter, writer):
+def callback(img, dim, objs, mot_tracker, behav_interpreter, writer, tracklets):
     detections = []
     image = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     
@@ -79,7 +79,6 @@ def callback(img, dim, objs, mot_tracker, behav_interpreter, writer):
     trdata = mot_tracker.update(detections)
     
     #generate tracklets 
-    tracklets = {}
     for i in range(len(trdata.tolist())):
         coords = trdata.tolist()[i]
         x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
@@ -93,7 +92,6 @@ def callback(img, dim, objs, mot_tracker, behav_interpreter, writer):
         cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
         
         #cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
-    print(tracklets)
     writer.write(image)
 
 
