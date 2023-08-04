@@ -17,9 +17,9 @@ input_size = yolo.get_image_size()
 
 
 def tracking(vid_path, dimension, input_size):
-    mot_tracker = Sort(max_age=1, 
-                       min_hits=3,
-                       iou_threshold=0.3)
+    mot_tracker = Sort(max_age=2, 
+                       min_hits=5,
+                       iou_threshold=0.25)
     i = 0
     for img, img_pil in load_one_SK_PIL(vid_path, dimension):
         i += 1

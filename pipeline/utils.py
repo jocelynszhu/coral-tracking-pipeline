@@ -88,8 +88,8 @@ def callback(image, dim, objs, mot_tracker, writer):
     writer.write(image)
 
 def yolobbox2bbox(x,y,w,h, dim):
-    x1, y1 = (x-1/2)*w*dim, (y-1/2)*w*dim
-    x2, y2 = (x+1/2)*w*dim, (y+1/2)*w*dim
+    x1, y1 = (x+1/2-w/2)*dim, (y+1/2-h/2)*dim
+    x2, y2 = (x+1/2+w/2)*dim, (y+1/2+h/2)*dim
     return [x1, y1, x2, y2]
 
 # def yolobbox2bbox(x,y,w,h, dim):
