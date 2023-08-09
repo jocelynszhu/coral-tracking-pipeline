@@ -9,11 +9,11 @@ import pycoral.utils.edgetpu as etpu
 
 
 def tracking(video, dimension, input_size):
+    print("began tracking")
     mot_tracker = Sort(max_age=1, 
                        min_hits=3,
                        iou_threshold=0.3)
-    behav_interpreter = etpu.make_interpreter('models/behavioral_model.tflite')
-    behav_interpreter.allocate_tensors()
+
     tracklets = {}
     i = 0
     for img, img_pil in load_one_SK_PIL(video, dimension):
@@ -21,7 +21,7 @@ def tracking(video, dimension, input_size):
         try:
             _, net_image, _ = get_image_tensor(img_pil, input_size[0])
             dets = yolo.predict(net_image) #list of obj detections
-            track(i, dimension, dets, mot_tracker, behav_interpreter, writer, tracklets)
+            track(i, dimension, dets, mot_tracker, tracklets)
             print("tracked image")
         except:
             pass
@@ -50,6 +50,7 @@ def init_pipeline(vid_path, out_path, interpreter_file, detector_file, dim):
     }
     yolo = EdgeTPUModel(detector_file, alg_info, conf_thresh=0.4, iou_thresh=0.3)
     
+    print("initialized models and video")
     return video, writer, interpreter, yolo
 
 
