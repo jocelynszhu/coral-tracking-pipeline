@@ -4,9 +4,11 @@ import numpy as np
 
 import skvideo
 import skvideo.io
-import svgwrite
+
 
 import colorsys
+
+from skimage.transform import rescale
 
 from PIL import Image
 
@@ -47,11 +49,7 @@ def load_one_CV_PIL(path, dim):
             else:
                 break
 
-def load_one_SK_PIL(path, dim):
-        vidcap = cv2.VideoCapture(path)
-        n_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) # number of frames
-        video = loadVideoSK(path, n_frames, greyscale=False)
-        video = video[::1,...]
+def load_one_SK_PIL(video, dim):
         print("loaded_video")
         for frame in video:
             img = mold_image(frame[:,:,:], dim)
@@ -64,9 +62,8 @@ def input_image_size(interpreter):
     return width, height, channels
 
 
-def callback(img, dim, objs, mot_tracker, behav_interpreter, writer, tracklets):
+def track(frame_idx, dim, objs, mot_tracker, tracklets):
     detections = []
-    image = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     
     #format yolo detects for tracking
     for obj in objs:
@@ -78,22 +75,38 @@ def callback(img, dim, objs, mot_tracker, behav_interpreter, writer, tracklets):
     trdata = []
     trdata = mot_tracker.update(detections)
     
-    #generate tracklets 
+    #determine tracklets
     for i in range(len(trdata.tolist())):
         coords = trdata.tolist()[i]
-        x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
+        # x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
         name_idx = int(coords[4])
+        tracklet_info = coords.copy()
+        tracklet_info[4] = frame_idx
         try:
-            tracklets[name_idx].append(img)
+            tracklets[name_idx].append(tracklet_info)
         except:
-            tracklets[name_idx] = [img]
-        #name = "ID: {}".format(str(name_idx))
-        color = create_unique_color_float(name_idx)
-        cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness=2)
-        
-        #cv2.putText(image, name, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, thickness=2)
-    writer.write(image)
+            tracklets[name_idx] = [tracklet_info]
+    return tracklets
 
+def generate_tracklets(viddata, tracklets, dim): 
+    tracklet_vid = []
+
+    for tracklet_info in tracklets:
+        mask = [int(tracklet_info[0]), int(tracklet_info[1]), int(tracklet_info[2]), int(tracklet_info[3])]
+        frame = viddata[tracklet_info[4]]
+        frame = mold_image(frame[:,:,:], dim)
+        masked_frame = rescale_img(mask, frame)
+        tracklet_vid.append(masked_frame)
+    return tracklet_vid
+
+def behavior(tracklets, interpreter):
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    interpreter.set_tensor(input_details[0]['index'], tracklets.detach().numpy().transpose(0,2,3,1))
+    interpreter.set_tensor(input_details[1]['index'], tracklets.detach().numpy().transpose(0,2,3,1)[...,:3])
+    interpreter.invoke()
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+    return output_data
 
 def convert2bbox(x0, y0, x1, y1, dim):
     x = x0 + (x1 - x0) / 2
@@ -118,3 +131,50 @@ def create_unique_color_float(tag, hue_step=0.41):
     h, v = (tag * hue_step) % 1, 1. - (int(tag * hue_step) % 4) / 5.
     r, g, b = colorsys.hsv_to_rgb(h, 1., v)
     return int(255*r), int(255*g), int(255*b)
+
+def rescale_img(mask, frame, mask_size=224):
+    rectsize = [mask[3] - mask[1], mask[2] - mask[0]]
+
+    rectsize = np.asarray(rectsize)
+    scale = mask_size / rectsize.max()
+
+    cutout = frame[mask[0] : mask[0] + rectsize[1], mask[1] : mask[1] + rectsize[0], :]
+
+    img_help = rescale(cutout, scale, multichannel=True)
+    padded_img = np.zeros((mask_size, mask_size, 3))
+
+    padded_img[
+        int(mask_size / 2 - img_help.shape[0] / 2) : int(
+            mask_size / 2 + img_help.shape[0] / 2
+        ),
+        int(mask_size / 2 - img_help.shape[1] / 2) : int(
+            mask_size / 2 + img_help.shape[1] / 2
+        ),
+        :,
+    ] = img_help
+
+    return padded_img
+
+def displayBoxes(frame, mask, id, animal_id=None, mask_id=None):
+    #frame is in np format 
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_thickness = 1
+
+    color = create_unique_color_float(id)
+    cv2.rectangle(frame, (mask[1], mask[0]), (mask[3], mask[2]), color, 3)
+
+    if animal_id:
+        cv2.putText(
+            frame,
+            str(animal_id),
+            (mask[1], mask[0]),
+            font,
+            0.7,
+            color,
+            font_thickness,
+            cv2.LINE_AA,
+        )
+
+    return frame
+
