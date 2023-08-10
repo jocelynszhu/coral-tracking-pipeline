@@ -80,8 +80,7 @@ def track(frame_idx, dim, objs, mot_tracker, tracklets):
         coords = trdata.tolist()[i]
         # x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
         name_idx = int(coords[4])
-        tracklet_info = coords.copy()
-        tracklet_info[4] = frame_idx
+        tracklet_info = [int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3]), frame_idx]
         try:
             tracklets[name_idx].append(tracklet_info)
         except:
@@ -90,7 +89,6 @@ def track(frame_idx, dim, objs, mot_tracker, tracklets):
 
 def generate_tracklets(viddata, tracklets, dim): 
     tracklet_vid = []
-
     for tracklet_info in tracklets:
         mask = [int(tracklet_info[0]), int(tracklet_info[1]), int(tracklet_info[2]), int(tracklet_info[3])]
         frame = viddata[tracklet_info[4]]

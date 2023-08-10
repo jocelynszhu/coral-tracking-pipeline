@@ -27,7 +27,8 @@ def tracking(video, dimension, input_size):
             pass
         i += 1
     print(tracklets)
-    writer.release()
+    return tracklets
+    # writer.release()
 
 
 def init_pipeline(vid_path, out_path, interpreter_file, detector_file, dim):
