@@ -25,7 +25,7 @@ def tracking(video, dimension, input_size):
             print("tracked image")
         except:
             pass
-    i += 1
+        i += 1
     print(tracklets)
     writer.release()
 
