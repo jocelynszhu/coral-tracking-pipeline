@@ -58,7 +58,7 @@ if __name__ =="__main__":
     model_name = 'models/1964_3.tflite'
     interpreter_name = 'models/behavioral_model.tflite'
 
-    video, writer, yolo = init_pipeline(vid_path, out_path, interpreter_name, model_name, dim)
+    video, writer, yolo = init_pipeline(vid_path, out_path, model_name, dim)
 
     tracking(video, dim, yolo.get_image_size(), writer)
 
