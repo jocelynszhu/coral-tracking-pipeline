@@ -67,10 +67,13 @@ if __name__ =="__main__":
 
     tracklets_all = tracking(video, dim, yolo.get_image_size(), writer)
 
+    yolo = None #free space 
+    
     interpreter = etpu.make_interpreter(interpreter_name)
     interpreter.allocate_tensors()
 
     print("loaded behavioral interpreter")
+
     for id, tracklets in tracklets_all.items():
         if len(tracklets_all[id]) >= 11:
             tracklets_id = tracklets_all[id][0:11] #figure out how to deal with longer
