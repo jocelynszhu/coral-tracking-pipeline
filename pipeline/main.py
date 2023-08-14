@@ -15,17 +15,19 @@ def tracking(video, dimension, input_size, writer):
                        iou_threshold=0.3)
 
     i = 0
+    tracklets = {}
     for img, img_pil in load_one_SK_PIL(video, dimension):
         print("loaded image ", i)
         try:
             _, net_image, _ = get_image_tensor(img_pil, input_size[0])
             dets = yolo.predict(net_image) #list of obj detections
-            track(img, dimension, dets, mot_tracker, writer)
+            track(img, i, dimension, dets, mot_tracker, writer, tracklets)
             print("tracked image")
         except:
             pass
         i += 1
     writer.release()
+    return tracklets
 
 
 def init_pipeline(vid_path, out_path, detector_file, dim):
@@ -60,6 +62,7 @@ if __name__ =="__main__":
 
     video, writer, yolo = init_pipeline(vid_path, out_path, model_name, dim)
 
-    tracking(video, dim, yolo.get_image_size(), writer)
+    tracklets = tracking(video, dim, yolo.get_image_size(), writer)
+    print(tracklets)
 
 

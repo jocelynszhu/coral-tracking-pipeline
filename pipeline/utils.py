@@ -62,7 +62,7 @@ def input_image_size(interpreter):
     return width, height, channels
 
 
-def track(img, dim, objs, mot_tracker, writer):
+def track(img, frame_idx, dim, objs, mot_tracker, writer, tracklets):
     detections = []
     
     #format yolo detects for tracking
@@ -80,6 +80,11 @@ def track(img, dim, objs, mot_tracker, writer):
         coords = trdata.tolist()[i]
         x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
         name_idx = int(coords[4])
+        coords[4] = frame_idx
+        if name_idx in tracklets:
+            tracklets[name_idx].append(coords)
+        else:
+            tracklets[name_idx] = [coords]
         image = displayBoxes(image, [x1, y1, x2, y2], name_idx)
     writer.write(image)
     
