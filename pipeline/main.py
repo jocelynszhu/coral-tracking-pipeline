@@ -71,6 +71,9 @@ if __name__ =="__main__":
     
     interpreter = etpu.make_interpreter(interpreter_name)
     interpreter.allocate_tensors()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    
 
     print("loaded behavioral interpreter")
 
@@ -81,6 +84,6 @@ if __name__ =="__main__":
             continue
         tracklet_video = generate_tracklets(video, tracklets_id, dim)
         print("generated tracklet for ", id)
-        id_behavior = behavior(tracklet_video, interpreter)
+        id_behavior = behavior(tracklet_video, interpreter, input_details, output_details)
         print(id_behavior)
 
