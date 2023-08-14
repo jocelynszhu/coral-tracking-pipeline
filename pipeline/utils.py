@@ -124,26 +124,24 @@ def create_unique_color_float(tag, hue_step=0.41):
     r, g, b = colorsys.hsv_to_rgb(h, 1., v)
     return int(255*r), int(255*g), int(255*b)
 
-def rescale_img(mask, frame, mask_size=224):
+def pad_img(mask, frame, dim):
     rectsize = [mask[3] - mask[1], mask[2] - mask[0]]
 
     rectsize = np.asarray(rectsize)
-    scale = mask_size / rectsize.max()
 
     cutout = frame[mask[0] : mask[0] + rectsize[1], mask[1] : mask[1] + rectsize[0], :]
 
-    img_help = rescale(cutout, scale, multichannel=True)
-    padded_img = np.zeros((mask_size, mask_size, 3))
+    padded_img = np.zeros((dim, dim, 3))
 
     padded_img[
-        int(mask_size / 2 - img_help.shape[0] / 2) : int(
-            mask_size / 2 + img_help.shape[0] / 2
+        int(dim / 2 - cutout.shape[0] / 2) : int(
+            dim / 2 + cutout.shape[0] / 2
         ),
-        int(mask_size / 2 - img_help.shape[1] / 2) : int(
-            mask_size / 2 + img_help.shape[1] / 2
+        int(dim / 2 - cutout.shape[1] / 2) : int(
+            dim / 2 + cutout.shape[1] / 2
         ),
         :,
-    ] = img_help
+    ] = cutout
 
     return padded_img
 
