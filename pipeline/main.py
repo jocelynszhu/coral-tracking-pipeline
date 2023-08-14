@@ -62,7 +62,15 @@ if __name__ =="__main__":
 
     video, writer, yolo = init_pipeline(vid_path, out_path, model_name, dim)
 
-    tracklets = tracking(video, dim, yolo.get_image_size(), writer)
-    print(tracklets)
+    tracklets_all = tracking(video, dim, yolo.get_image_size(), writer)
 
+    for id, tracklets in tracklets_all.items():
+        if len(tracklets_all[id]) >= 11:
+            tracklets_id = tracklets_all[id][0:11] #figure out how to deal with longer
+        else:
+            continue
+        tracklet_video = generate_tracklets(video, tracklets_id, id, dim)
+
+        # id_behavior = behavior(tracklet_video, interpreter)
+        # print(id_behavior)
 
