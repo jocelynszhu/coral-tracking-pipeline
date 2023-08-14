@@ -30,14 +30,15 @@ def tracking(video, dimension, input_size, writer):
     return tracklets
 
 
-def init_pipeline(vid_path, out_path, detector_file, dim):
-
+def init_pipeline(vid_path, out_path, detector_file, interpreter_file, dim):
 
     vidcap     = cv2.VideoCapture(vid_path)
     fps  = int(vidcap.get(cv2.CAP_PROP_FPS))
     n_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) # number of frames
     video = loadVideoSK(vid_path, n_frames, greyscale=False)
     video = video[::1,...]
+    
+    print("loaded video")
 
     writer = cv2.VideoWriter(out_path, 
             cv2.VideoWriter_fourcc(*'mp4v'), fps, (dim, dim))
@@ -47,9 +48,14 @@ def init_pipeline(vid_path, out_path, detector_file, dim):
         "classes": ['other_animal', 'pig', 'blackbear', 'bobcat', 'rabbit', 'cougar', 'skunk', 'otter', 'rat']
     }
     yolo = EdgeTPUModel(detector_file, alg_info, conf_thresh=0.4, iou_thresh=0.3)
-    
+    print("loaded yolo")
+
+    interpreter = etpu.make_interpreter(interpreter_file)
+    interpreter.allocate_tensors()
+    print("loaded behavioral interpreter")
+
     print("initialized models and video")
-    return video, writer, yolo
+    return video, writer, yolo, interpreter
 
 
 if __name__ =="__main__":
@@ -60,7 +66,7 @@ if __name__ =="__main__":
     model_name = 'models/1964_3.tflite'
     interpreter_name = 'models/behavioral_model.tflite'
 
-    video, writer, yolo = init_pipeline(vid_path, out_path, model_name, dim)
+    video, writer, yolo, interpreter = init_pipeline(vid_path, out_path, model_name, interpreter_name, dim)
 
     tracklets_all = tracking(video, dim, yolo.get_image_size(), writer)
 
@@ -71,6 +77,6 @@ if __name__ =="__main__":
             continue
         tracklet_video = generate_tracklets(video, tracklets_id, dim)
         print("generated tracklet for ", id)
-        # id_behavior = behavior(tracklet_video, interpreter)
-        # print(id_behavior)
+        id_behavior = behavior(tracklet_video, interpreter)
+        print(id_behavior)
 
