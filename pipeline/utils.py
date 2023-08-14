@@ -169,8 +169,10 @@ def displayBoxes(frame, mask, id, animal_id=None, mask_id=None):
 def behavior(tracklets, interpreter):
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    interpreter.set_tensor(input_details[0]['index'], tracklets.detach().numpy().transpose(0,2,3,1))
-    interpreter.set_tensor(input_details[1]['index'], tracklets.detach().numpy().transpose(0,2,3,1)[...,:3])
+    interpreter.set_tensor(input_details[0]['index'], tracklets.transpose(0,2,3,1))
+    interpreter.set_tensor(input_details[1]['index'], tracklets.transpose(0,2,3,1)[...,:3])
+    print("set tensors")
     interpreter.invoke()
     output_data = interpreter.get_tensor(output_details[0]['index'])
+    print("got prediction")
     return output_data
