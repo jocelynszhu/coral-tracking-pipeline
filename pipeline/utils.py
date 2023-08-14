@@ -112,7 +112,7 @@ def generate_tracklets(viddata, tracklets, dim):
         mask = [int(tracklet_info[0]), int(tracklet_info[1]), int(tracklet_info[2]), int(tracklet_info[3])]
         frame = viddata[tracklet_info[4]]
         frame = mold_image(frame[:,:,:], dim)
-        masked_frame = rescale_img(mask, frame)
+        masked_frame = pad_img(mask, frame, dim)
         tracklet_vid.append(masked_frame)
     return tracklet_vid
 
