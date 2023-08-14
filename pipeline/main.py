@@ -69,8 +69,8 @@ if __name__ =="__main__":
             tracklets_id = tracklets_all[id][0:11] #figure out how to deal with longer
         else:
             continue
-        tracklet_video = generate_tracklets(video, tracklets_id, id, dim)
-
+        tracklet_video = generate_tracklets(video, tracklets_id, dim)
+        print("generated tracklet for ", id)
         # id_behavior = behavior(tracklet_video, interpreter)
         # print(id_behavior)
 

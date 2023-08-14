@@ -105,7 +105,17 @@ def gen_tracklet(img, mask):
     """
     x1, y1, x2, y2 = mask
     return img[y1:y2, x1:x2]
-     
+
+def generate_tracklets(viddata, tracklets, dim): 
+    tracklet_vid = []
+    for tracklet_info in tracklets:
+        mask = [int(tracklet_info[0]), int(tracklet_info[1]), int(tracklet_info[2]), int(tracklet_info[3])]
+        frame = viddata[tracklet_info[4]]
+        frame = mold_image(frame[:,:,:], dim)
+        masked_frame = rescale_img(mask, frame)
+        tracklet_vid.append(masked_frame)
+    return tracklet_vid
+
 def create_unique_color_float(tag, hue_step=0.41):
     """Create a unique RGB color code for a given track id (tag).
 
