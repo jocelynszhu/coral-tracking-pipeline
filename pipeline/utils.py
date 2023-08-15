@@ -62,7 +62,7 @@ def input_image_size(interpreter):
     return width, height, channels
 
 
-def track(frame_idx, dim, objs, mot_tracker, tracklets):
+def track(img, frame_idx, dim, objs, mot_tracker, writer, tracklets):
     detections = []
     
     #format yolo detects for tracking
@@ -74,37 +74,21 @@ def track(frame_idx, dim, objs, mot_tracker, tracklets):
     detections = np.array(detections)
     trdata = []
     trdata = mot_tracker.update(detections)
-    
+    image =  cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     #determine tracklets
     for i in range(len(trdata.tolist())):
         coords = trdata.tolist()[i]
-        # x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
+        x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
         name_idx = int(coords[4])
-        tracklet_info = [int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3]), frame_idx]
-        try:
-            tracklets[name_idx].append(tracklet_info)
-        except:
-            tracklets[name_idx] = [tracklet_info]
-    return tracklets
+        coords[4] = frame_idx
+        if name_idx in tracklets:
+            tracklets[name_idx].append(coords)
+        else:
+            tracklets[name_idx] = [coords]
+        image = displayBoxes(image, [x1, y1, x2, y2], name_idx)
+    writer.write(image)
+    
 
-def generate_tracklets(viddata, tracklets, dim): 
-    tracklet_vid = []
-    for tracklet_info in tracklets:
-        mask = [int(tracklet_info[0]), int(tracklet_info[1]), int(tracklet_info[2]), int(tracklet_info[3])]
-        frame = viddata[tracklet_info[4]]
-        frame = mold_image(frame[:,:,:], dim)
-        masked_frame = rescale_img(mask, frame)
-        tracklet_vid.append(masked_frame)
-    return tracklet_vid
-
-def behavior(tracklets, interpreter):
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
-    interpreter.set_tensor(input_details[0]['index'], tracklets.detach().numpy().transpose(0,2,3,1))
-    interpreter.set_tensor(input_details[1]['index'], tracklets.detach().numpy().transpose(0,2,3,1)[...,:3])
-    interpreter.invoke()
-    output_data = interpreter.get_tensor(output_details[0]['index'])
-    return output_data
 
 def convert2bbox(x0, y0, x1, y1, dim):
     x = x0 + (x1 - x0) / 2
@@ -121,7 +105,17 @@ def gen_tracklet(img, mask):
     """
     x1, y1, x2, y2 = mask
     return img[y1:y2, x1:x2]
-     
+
+def generate_tracklets(viddata, tracklets, dim): 
+    tracklet_vid = []
+    for tracklet_info in tracklets:
+        mask = [int(tracklet_info[0]), int(tracklet_info[1]), int(tracklet_info[2]), int(tracklet_info[3])]
+        frame = viddata[tracklet_info[4]]
+        frame = mold_image(frame[:,:,:], dim)
+        masked_frame = pad_img(mask, frame, dim)
+        tracklet_vid.append(masked_frame)
+    return np.asarray(tracklet_vid)
+
 def create_unique_color_float(tag, hue_step=0.41):
     """Create a unique RGB color code for a given track id (tag).
 
@@ -130,32 +124,28 @@ def create_unique_color_float(tag, hue_step=0.41):
     r, g, b = colorsys.hsv_to_rgb(h, 1., v)
     return int(255*r), int(255*g), int(255*b)
 
-def rescale_img(mask, frame, mask_size=224):
+def pad_img(mask, frame, dim):
     rectsize = [mask[3] - mask[1], mask[2] - mask[0]]
 
     rectsize = np.asarray(rectsize)
-    scale = mask_size / rectsize.max()
 
     cutout = frame[mask[0] : mask[0] + rectsize[1], mask[1] : mask[1] + rectsize[0], :]
 
-    img_help = rescale(cutout, scale, multichannel=True)
-    padded_img = np.zeros((mask_size, mask_size, 3))
+    padded_img = np.zeros((dim, dim, 3))
 
     padded_img[
-        int(mask_size / 2 - img_help.shape[0] / 2) : int(
-            mask_size / 2 + img_help.shape[0] / 2
+        int(dim / 2 - cutout.shape[0] / 2) : int(
+            dim / 2 + cutout.shape[0] / 2
         ),
-        int(mask_size / 2 - img_help.shape[1] / 2) : int(
-            mask_size / 2 + img_help.shape[1] / 2
+        int(dim / 2 - cutout.shape[1] / 2) : int(
+            dim / 2 + cutout.shape[1] / 2
         ),
         :,
-    ] = img_help
+    ] = cutout
 
     return padded_img
 
 def displayBoxes(frame, mask, id, animal_id=None, mask_id=None):
-    #frame is in np format 
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_thickness = 1
 
@@ -176,3 +166,11 @@ def displayBoxes(frame, mask, id, animal_id=None, mask_id=None):
 
     return frame
 
+def behavior(tracklets, interpreter, input_details, output_details):
+    interpreter.set_tensor(input_details[0]['index'], tracklets.transpose(0,2,3,1))
+    interpreter.set_tensor(input_details[1]['index'], tracklets.transpose(0,2,3,1)[...,:3])
+    print("set tensors")
+    interpreter.invoke()
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+    print("got prediction")
+    return output_data
