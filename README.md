@@ -18,6 +18,7 @@ Simple script to run inference on video of previously generated tracklets
 
 ### main.py (tracking branch)
 Script to run object detection and tracking and generate video with bounding boxes
+- Note: utils are not documented here, see main.py in main branch for docstrings
 
 ## References
 [SORT](https://github.com/abewley/sort)

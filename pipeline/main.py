@@ -6,9 +6,21 @@ from sort import Sort
 import cv2
 import pycoral.utils.edgetpu as etpu
 
-
+#Behavioral classification pipeline
 
 def tracking(video, dimension, input_size, writer):
+    """ 
+    Runs object detection and tracking on video
+
+    parameters
+        video: np array formatted video
+        dimension: dimension to reshape frames to for tracking/detection/classification
+        input_size: image size for object detector
+        writer: cv2 writer to write final video 
+
+    returns
+        tracklet dictionary mapping detected bounding boxes and frame index to object id
+    """
     print("began tracking")
     mot_tracker = Sort(max_age=1, 
                        min_hits=3,
@@ -31,7 +43,19 @@ def tracking(video, dimension, input_size, writer):
 
 
 def init_pipeline(vid_path, out_path, detector_file, dim):
+    """
+    initializes video, yolo model, video writer 
+    
+    parameters
+        vid_path: path to video
+        out_path: path to write final video to
+        detector_file: path to yolo model
+        dim: dimension for video writer, must match dimension for final video frames
+    
+    returns
+        np array formatted video, video writer, yolo model
 
+    """
     vidcap     = cv2.VideoCapture(vid_path)
     fps  = int(vidcap.get(cv2.CAP_PROP_FPS))
     n_frames = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)) # number of frames
