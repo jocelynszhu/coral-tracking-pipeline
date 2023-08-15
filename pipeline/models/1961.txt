@@ -1,3 +1,0 @@
-0  other_animal
-1  rat
-2  cat
