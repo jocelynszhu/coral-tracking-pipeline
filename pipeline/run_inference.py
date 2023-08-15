@@ -36,7 +36,7 @@ if __name__ =="__main__":
     video = video[::1,...]
 
     print("loaded behavioral interpreter")
-    processing(video, dim)
+    processing(video, dim, interpreter, input_details, output_details)
 
 
 
