@@ -13,6 +13,8 @@ def processing(video, dimension, interpreter, input_details, output_details):
             prediction = behavior(inference_frames, interpreter, input_details, output_details)
             print(prediction)
             tracking_frames = []
+        print("loaded image ", i)
+        i+=1
 
 
 if __name__ =="__main__":
