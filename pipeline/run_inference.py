@@ -3,6 +3,9 @@ import cv2
 import pycoral.utils.edgetpu as etpu
 import numpy as np
 
+""" Simple script to load in video and run behavioral model on tracklets"""
+
+
 def processing(video, dimension, interpreter, input_details, output_details):
     i = 0
     tracking_frames = []
