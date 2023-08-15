@@ -9,7 +9,7 @@ def processing(video, dimension, interpreter, input_details, output_details):
         if len(tracking_frames) < 11:
             tracking_frames.append(img)
         else:
-            inference_frames = np.asarray(tracking_frames)
+            inference_frames = np.asarray(tracking_frames, dtype=np.float32)
             prediction = behavior(inference_frames, interpreter, input_details, output_details)
             print(prediction)
             tracking_frames = []
