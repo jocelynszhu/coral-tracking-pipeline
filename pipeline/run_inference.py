@@ -2,14 +2,21 @@ from utils import *
 import cv2
 import pycoral.utils.edgetpu as etpu
 
-def processing(video, dimension):
+def processing(video, dimension, interpreter, input_details, output_details):
     i = 0
+    tracking_frames = []
     for img, img_pil in load_one_SK_PIL(video, dimension):
-        print("loaded image ", i, ", image shape ", img.shape)
+        if len(tracking_frames) < 11:
+            tracking_frames.append(img)
+        else:
+            inference_frames = np.asarray(tracking_frames)
+            prediction = behavior(inference_frames, interpreter, input_details, output_details)
+            print(prediction)
+            tracking_frames = []
 
 
 if __name__ =="__main__":
-    vid_path = ""
+    vid_path = "limping.mp4"
     dim = 224
 
     model_name = 'models/1964_3.tflite'
