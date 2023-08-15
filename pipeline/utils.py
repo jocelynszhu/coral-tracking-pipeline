@@ -167,7 +167,7 @@ def displayBoxes(frame, mask, id, animal_id=None, mask_id=None):
     return frame
 
 def behavior(tracklets, interpreter, input_details, output_details):
-    print(tracklets.transpose(0,2,3,1).shape)
+    print(tracklets.shape)
     interpreter.set_tensor(input_details[0]['index'], tracklets.transpose(0,2,3,1))
     interpreter.set_tensor(input_details[1]['index'], tracklets.transpose(0,2,3,1)[...,:3])
     print("set tensors")

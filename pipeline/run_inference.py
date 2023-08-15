@@ -1,6 +1,7 @@
 from utils import *
 import cv2
 import pycoral.utils.edgetpu as etpu
+import numpy as np
 
 def processing(video, dimension, interpreter, input_details, output_details):
     i = 0
@@ -9,7 +10,7 @@ def processing(video, dimension, interpreter, input_details, output_details):
         if len(tracking_frames) < 11:
             tracking_frames.append(img)
         else:
-            inference_frames = np.asarray(tracking_frames, dtype=np.float32)
+            inference_frames = np.asarray(tracking_frames, dtype=np.float32).reshape(1, 33, dim, dim)
             prediction = behavior(inference_frames, interpreter, input_details, output_details)
             print(prediction)
             tracking_frames = []
